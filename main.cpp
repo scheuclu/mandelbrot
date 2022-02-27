@@ -1,4 +1,7 @@
 #include <iostream>
+#include <regex>
+#include <cassert>
+#include <iomanip>
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -8,6 +11,7 @@
 #include <omp.h>
 
 #define MAXITER 512
+#define PI 3.14159265359
 
 class Image{
     public:
@@ -41,15 +45,27 @@ class Image{
             myfile<<std::endl;
             for (int w=0; w<this->W; w++){ //Loop over columns
               int val = data[h][w];
-              double frac = val/255.0;
-              int r = (int)(pow(frac,4)*255);
-              int g = (int)(pow(frac,2)*255);
-              int b = val;
+              double frac = sqrt(val/(double)MAXITER);
+	      //assert(frac<=1.0);
+              int r = (frac+0.2*sin(frac*2*PI))*MAXITER;
+	      int g = (frac+0.2*sin(frac*4*PI))*MAXITER;
+	      int b = (frac+0.2*sin(frac*6*PI))*MAXITER;
               myfile<<r<<" "<<g<<" "<<b;
               myfile<<std::endl; 
             }
         }
         myfile.close();
+
+	std::string outpath = path;
+        outpath = std::regex_replace(outpath, std::regex("ppm"), "png");
+
+        std::stringstream ss;
+        ss << "convert "<< path<<" "<<outpath;
+        std::string command = ss.str();
+	std::cout<<command<<std::endl;
+	//assert(1==2);
+	system(command.c_str());
+	system(("rm "+path).c_str());
       }
 
       int getH(){
@@ -120,14 +136,15 @@ int main(){
     
     int W=1920*2;
     int H=1080*2;
-    int N=1000;//672
+    int N=1600;//672
 
-    double loc_x=-0.745158;
-    double loc_y=0.1125747;
+    double loc_x=-0.7451580000099;
+    double loc_y=0.11257483;
     //double size_x=0.000002;
     //double size_y=0.000002;
-    double size_x=1.92*2;
-    double size_y=1.08*2;
+    double orig_size_x=1.92*2;
+    double orig_size_y=1.08*2;
+   
     // double size_x=0.2;
     // double size_y=0.2;
 
@@ -135,15 +152,17 @@ int main(){
 
     #pragma omp parallel for
     for(int i=0; i<N; ++i){
+
+	double size_x = orig_size_x*pow(0.98,i);
+	double size_y = orig_size_y*pow(0.98,i);
+
+        Image* img = getMandelbrot(loc_x, loc_y, size_x, size_y, H, W);
+
         std::stringstream ss;
         ss << "output/image_"<< std::setfill('0') << std::setw(5) << i<<".ppm";
         std::string outpath = ss.str();
-
-        Image* img = getMandelbrot(loc_x, loc_y, size_x, size_y, H, W);
         img->to_file(outpath);
 
-        size_x*=0.98;
-        size_y*=0.98;
         count++;
         std::cout<<count<<"/"<<N<<std::endl;
 
