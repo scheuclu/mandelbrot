@@ -9,7 +9,6 @@
 
 #define MAXITER 512
 
-
 class Image{
     public:
       Image(int H, int W): H(H), W(W) {
@@ -34,14 +33,20 @@ class Image{
       void to_file(std::string path){
         std::ofstream myfile;
         myfile.open(path);
-        myfile << "P2\n";
+        myfile << "P3\n";
         myfile << this->W<<" "<<this->H<<std::endl;
         myfile << MAXITER;
         
-        for(int h=0; h<this->H; h++){
+        for(int h=0; h<this->H; h++){ //Loop over rows
             myfile<<std::endl;
-            for (int w=0; w<this->W; w++){
-              myfile<<this->data[h][w]<<" ";
+            for (int w=0; w<this->W; w++){ //Loop over columns
+              int val = data[h][w];
+              double frac = val/255.0;
+              int r = (int)(pow(frac,4)*255);
+              int g = (int)(pow(frac,2)*255);
+              int b = val;
+              myfile<<r<<" "<<g<<" "<<b;
+              myfile<<std::endl; 
             }
         }
         myfile.close();
@@ -57,7 +62,7 @@ class Image{
 
     private:
       int W, H;
-      std::vector<std::vector<int>> data;
+      std::vector<std::vector<int> > data;
 };
 
 
@@ -113,8 +118,8 @@ Image* getMandelbrot(double loc_x, double loc_y, double size_x, double size_y, i
 
 int main(){
     
-    int W=1920;
-    int H=1080;
+    int W=1920*2;
+    int H=1080*2;
     int N=1000;//672
 
     double loc_x=-0.745158;
@@ -131,7 +136,7 @@ int main(){
     #pragma omp parallel for
     for(int i=0; i<N; ++i){
         std::stringstream ss;
-        ss << "output/image_"<< std::setfill('0') << std::setw(5) << i<<".pbm";
+        ss << "output/image_"<< std::setfill('0') << std::setw(5) << i<<".ppm";
         std::string outpath = ss.str();
 
         Image* img = getMandelbrot(loc_x, loc_y, size_x, size_y, H, W);
