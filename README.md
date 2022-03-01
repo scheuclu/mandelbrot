@@ -21,5 +21,5 @@ ffmpeg -framerate 30 -pattern_type glob -i 'image_*.png' -c:v libx264 -pix_fmt y
   ```
   ---
   
-  Click to watch the video.  
-  [![IMAGE ALT TEXT](http://img.youtube.com/vi/PzmcI0q1fkQ/0.jpg)](http://www.youtube.com/watch?v=PzmcI0q1fkQ "Video Title")
+  **Click to watch the video.**  
+  [![IMAGE ALT TEXT](./frame.png)](http://www.youtube.com/watch?v=6KapQf8ZErs)
